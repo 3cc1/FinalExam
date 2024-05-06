@@ -1,0 +1,144 @@
+class MovieRecommender:
+    def __init__(self, movies):
+        self.database = movies
+
+    def search_by_title(self, movieSearch):
+        matches = []
+        for movie in self.database:
+            if movieSearch.lower() in movie["title"].lower():
+                matches.append(movie)
+        return matches
+
+    def add_user_preferences(self):
+        year = input("Enter the year for the movie you are trying to look for (leave blank if not specified): ")
+        genre = input("Enter your preferred genre of the movie (leave blank if not specified): ")
+        return year, genre
+
+    def find_matches(self, year=None, genre=None):
+        matches = []
+        for movie in self.database:
+            if (not year or movie["year"] == int(year)) and (
+                    not genre or genre.lower() in [g.lower() for g in movie["genre"]]):
+                matches.append(movie)
+        return matches
+
+    def sort_recommendations(self, criteria='relevance'):
+        if criteria == 'relevance':
+            return self.database
+        elif criteria == 'release_year':
+            return self.merge_sort(self.database, key=lambda x: x['year'])
+        elif criteria == 'genre':
+            sorted_movies = self.database.copy()
+            n = len(sorted_movies)
+            for i in range(n):
+                swapped = False
+                for j in range(0, n - i - 1):
+                    if sorted_movies[j]['genre'] > sorted_movies[j + 1]['genre']:
+                        sorted_movies[j], sorted_movies[j + 1] = sorted_movies[j + 1], sorted_movies[j]
+                        swapped = True
+                if not swapped:
+                    break
+            return sorted_movies
+        else:
+            return self.database
+
+    def merge_sort(self, array, key=lambda x: x):
+        if len(array) <= 1:
+            return array
+        else:
+            mid = len(array) // 2
+            left_half = array[:mid]
+            right_half = array[mid:]
+            left_sorted = self.merge_sort(left_half, key=key)
+            right_sorted = self.merge_sort(right_half, key=key)
+            return self.merge(left_sorted, right_sorted, key=key)
+
+    def merge(self, left, right, key=lambda x: x):
+        result = []
+        left_pointer, right_pointer = 0, 0
+        while left_pointer < len(left) and right_pointer < len(right):
+            if key(left[left_pointer]) < key(right[right_pointer]):
+                result.append(left[left_pointer])
+                left_pointer += 1
+            else:
+                result.append(right[right_pointer])
+                right_pointer += 1
+        result.extend(left[left_pointer:])
+        result.extend(right[right_pointer:])
+        return result
+
+
+def searchBar():
+    print('\n  ------------------------------------------')
+    print('  |                                        |')
+    print('  ------------------------------------------')
+    movieSearch = input('  | [Type here to search for movies...]    |')
+    print('  ------------------------------------------')
+    print('  |            Or choose from:             |')
+    print('  ------------------------------------------')
+    print('  | [Dropdown for Genres]   [Dropdown for  |')
+    print('  |                       Popular actors]  |')
+    print('  ------------------------------------------')
+    return movieSearch
+
+
+movies = [
+    {"title": "Inception", "genre": ["Action", "Sci-Fi", "Thriller"], "year": 2010},
+    {"title": "The Dark Knight", "genre": ["Action", "Crime", "Drama"], "year": 2008},
+    {"title": "The Shawshank Redemption", "genre": ["Drama"], "year": 1994},
+    {"title": "Pulp Fiction", "genre": ["Crime", "Drama"], "year": 1994},
+    {"title": "Forrest Gump", "genre": ["Drama", "Romance"], "year": 1994},
+    {"title": "The Godfather", "genre": ["Crime", "Drama"], "year": 1972},
+    {"title": "The Lord of the Rings: The Return of the King", "genre": ["Action", "Adventure", "Drama"],
+     "year": 2003},
+    {"title": "The Matrix", "genre": ["Action", "Sci-Fi"], "year": 1999},
+    {"title": "Fight Club", "genre": ["Drama"], "year": 1999},
+    {"title": "Interstellar", "genre": ["Adventure", "Drama", "Sci-Fi"], "year": 2014},
+    {"title": "The Silence of the Lambs", "genre": ["Crime", "Drama", "Thriller"], "year": 1991},
+    {"title": "The Departed", "genre": ["Crime", "Drama", "Thriller"], "year": 2006},
+    {"title": "Gladiator", "genre": ["Action", "Adventure", "Drama"], "year": 2000},
+    {"title": "Schindler's List", "genre": ["Biography", "Drama", "History"], "year": 1993},
+    {"title": "Avatar", "genre": ["Action", "Adventure", "Fantasy"], "year": 2009},
+    {"title": "The Green Mile", "genre": ["Crime", "Drama", "Fantasy"], "year": 1999},
+    {"title": "The Prestige", "genre": ["Drama", "Mystery", "Sci-Fi"], "year": 2006},
+    {"title": "The Godfather: Part II", "genre": ["Crime", "Drama"], "year": 1974},
+    {"title": "The Usual Suspects", "genre": ["Crime", "Mystery", "Thriller"], "year": 1995},
+    {"title": "Se7en", "genre": ["Crime", "Drama", "Mystery"], "year": 1995}
+]
+
+preference = MovieRecommender(movies)
+movieSearch = searchBar()
+search_result = preference.search_by_title(movieSearch)
+
+if search_result:
+    print("Found matching movies:")
+    for movie in search_result:
+        print(movie)
+else:
+    print("No matches found.")
+
+    year, genre = preference.add_user_preferences()
+
+    preference_result = preference.find_matches(year, genre)
+    if preference_result:
+        print("Movies matching your preferences:")
+        for movie in preference_result:
+            print(movie)
+    else:
+        print("No movies found matching your preferences.")
+
+    sorted_by_relevance = preference.sort_recommendations()
+    sorted_by_release_year = preference.sort_recommendations(criteria="release_year")
+    sorted_by_genre = preference.sort_recommendations(criteria="genre")
+
+    print("\nSorted by relevance:")
+    for movie in sorted_by_relevance:
+        print(movie)
+
+    print("\nSorted by release year:")
+    for movie in sorted_by_release_year:
+        print(movie)
+
+    print("\nSorted by genre:")
+    for movie in sorted_by_genre:
+        print(movie)
