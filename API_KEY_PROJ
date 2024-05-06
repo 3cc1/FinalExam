@@ -1,0 +1,50 @@
+import requests
+
+URL = 'https://api.themoviedb.org/3'
+API = '6c158d1eb00269a044b95202eaefbfaf'
+
+def fetch_data(endpoint, params = None):
+    url = f"{BASE_URL}/{endpoint}"
+    params = params or {}
+    params["api_key"] = API
+    response = requests.get(url, params=params)
+    return response.json() if reponse.ok else None
+
+def get_top_movies(category):
+    if category == "popular":
+        endpoint = "movie/popular"
+    elif category == "now_playing":
+        endpoint = "movie/now_playing"
+    elif category == "upcoming":
+        endpoint = "movie/upcoming"
+    elif category == 'top_rated':
+        endpoint = 'movie/top_rated'
+    else:
+        return None
+
+    response = fetch_data(endpoint)
+    if response:
+        return endpoint['results[:10]']
+    else:
+        return None
+
+def create_database(category, movies):
+    if movies:
+        print(f" Database {category} is creating right now")
+        with open(f"{category}_movies.txt", 'w') as file:
+            for movie in movies:
+                file.write(f"Title: {movie['title']} \n")
+                file.write(f"Release Data: {movie['release_date']} \n")
+                file.write(f"Overview: {movie['overview']} \n")
+    else:
+        print(f"Failed to create a database of category {category}")
+
+
+def main():
+    categories = ["popular", "now_playing", "upcoming", "top_rated"]
+    for category in categories:
+        movies = get_top_movies(category)
+        create_database(category_movies)
+
+if __name__ == "main":
+    main()
